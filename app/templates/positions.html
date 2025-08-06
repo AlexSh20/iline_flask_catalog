@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+
+{% block title %}Должности - Система управления сотрудниками{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-briefcase"></i> Должности</h2>
+        <div class="text-muted">
+            Всего должностей: <span class="badge bg-primary">{{ positions|length }}</span>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for position in positions %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{{ position.title }}</h5>
+                    <span class="badge bg-info">Уровень {{ position.level }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6><i class="fas fa-users text-primary"></i> Сотрудники</h6>
+                        <p class="mb-2">
+                            <strong>{{ position.employees.count() }}</strong> человек
+                        </p>
+
+                        {% if position.employees %}
+                        <div class="position-employees">
+                            {% for employee in position.employees[:3] %}
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-user-circle text-muted me-2"></i>
+                                <a href="{{ url_for('main.employee_detail', id=employee.id) }}"
+                                    class="text-decoration-none small">
+                                    {{ employee.full_name }}
+                                </a>
+                            </div>
+                            {% endfor %}
+
+                            {% if position.employees.count() > 3 %}
+                            <small class="text-muted">
+                                и еще {{ position.employees.count() - 3 }} сотрудников...
+                            </small>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <small class="text-muted">Нет сотрудников на этой должности</small>
+                        {% endif %}
+                    </div>
+
+                    {% if position.employees %}
+                    <div class="mb-3">
+                        <h6><i class="fas fa-dollar-sign text-success"></i> Зарплата</h6>
+                        {% set salaries = position.employees|map(attribute='salary')|list %}
+                        {% if salaries %}
+                        <div class="small">
+                            <div>Мин: <strong>{{ "{:,.0f}".format(salaries|min) }} ₽</strong></div>
+                            <div>Макс: <strong>{{ "{:,.0f}".format(salaries|max) }} ₽</strong></div>
+                            <div>Средняя: <strong>{{ "{:,.0f}".format(salaries|sum / salaries|length) }} ₽</strong>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">ID: {{ position.id }}</small>
+                        {% if position.employees %}
+                        <a href="{{ url_for('main.employees', position_id=position.id) }}"
+                            class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye"></i> Показать всех
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('main.add_employee') }}?position_id={{ position.id }}"
+                            class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-plus"></i> Добавить сотрудника
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Статистика по уровням -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar"></i> Статистика по уровням должностей
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for level in range(1, 6) %}
+                        {% set level_positions = positions|selectattr('level', 'equalto', level)|list %}
+                        {% if level_positions %}
+                        <div class="col-md-2 col-sm-4 col-6 mb-3">
+                            <div class="text-center p-3 border rounded">
+                                <div class="h4 mb-1">
+                                    <span class="badge bg-secondary">{{ level }}</span>
+                                </div>
+                                <div class="small text-muted">Уровень</div>
+                                <div class="mt-2">
+                                    <strong>{{ level_positions|length }}</strong> должностей
+                                </div>
+                                <div class="small">
+                                    {% set total_employees = 0 %}
+                                    {% for pos in level_positions %}
+                                    {% set total_employees = total_employees + pos.employees.count() %}
+                                    {% endfor %}
+                                    {{ total_employees }} сотрудников
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Иерархия должностей -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-sitemap"></i> Иерархия должностей
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="hierarchy-chart">
+                        {% for level in range(1, 6) %}
+                        {% set level_positions = positions|selectattr('level', 'equalto', level)|list %}
+                        {% if level_positions %}
+                        <div class="hierarchy-level mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-primary me-2">Уровень {{ level }}</span>
+                                <div class="flex-grow-1 border-bottom"></div>
+                            </div>
+                            <div class="row">
+                                {% for position in level_positions %}
+                                <div class="col-md-3 col-sm-6 mb-2">
+                                    <div class="card card-sm">
+                                        <div class="card-body p-2">
+                                            <div class="small">
+                                                <strong>{{ position.title }}</strong>
+                                            </div>
+                                            <div class="text-muted small">
+                                                {{ position.employees.count() }} сотрудников
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">
+                            Уровень 1 - высший, уровень 5 - низший
+                        </small>
+                        <a href="{{ url_for('main.hierarchy') }}" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-sitemap"></i> Показать иерархию сотрудников
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/positions.css') }}">
+{% endblock %}

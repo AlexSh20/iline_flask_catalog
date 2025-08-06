@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-user-friends"></i> Сотрудники</h1>
+            <a href="{{ url_for('main.add_employee') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Добавить сотрудника
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Фильтры и сортировка -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="search" class="form-label">Поиск по имени</label>
+                        <input type="text" class="form-control" id="search" name="search"
+                            value="{{ current_search or '' }}" placeholder="Введите имя сотрудника">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="position_id" class="form-label">Должность</label>
+                        <select class="form-select" id="position_id" name="position_id">
+                            <option value="">Все должности</option>
+                            {% for position in positions %}
+                            <option value="{{ position.id }}" {% if current_position==position.id %}selected{% endif %}>
+                                {{ position.title }} (Уровень {{ position.level }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="sort_by" class="form-label">Сортировать по</label>
+                        <select class="form-select" id="sort_by" name="sort_by">
+                            <option value="full_name" {% if current_sort_by=='full_name' %}selected{% endif %}>ФИО
+                            </option>
+                            <option value="position_title" {% if current_sort_by=='position_title' %}selected{% endif
+                                %}>Должности</option>
+                            <option value="position_level" {% if current_sort_by=='position_level' %}selected{% endif
+                                %}>Уровню должности</option>
+                            <option value="manager_name" {% if current_sort_by=='manager_name' %}selected{% endif %}>
+                                Руководителю</option>
+                            <option value="salary" {% if current_sort_by=='salary' %}selected{% endif %}>Зарплате
+                            </option>
+                            <option value="hire_date" {% if current_sort_by=='hire_date' %}selected{% endif %}>Дате
+                                найма</option>
+                            <option value="years_of_service" {% if current_sort_by=='years_of_service' %}selected{%
+                                endif %}>Стажу</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="sort_order" class="form-label">Порядок</label>
+                        <select class="form-select" id="sort_order" name="sort_order">
+                            <option value="asc" {% if current_sort_order=='asc' %}selected{% endif %}>По возрастанию
+                            </option>
+                            <option value="desc" {% if current_sort_order=='desc' %}selected{% endif %}>По убыванию
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-12 d-flex align-items-end">
+                        <button type="submit" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-search"></i> Применить
+                        </button>
+                        <a href="{{ url_for('main.employees') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Сбросить
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Список сотрудников -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {% if employees %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="sortable-header" data-sort="full_name">
+                                    ФИО
+                                </th>
+                                <th class="sortable-header" data-sort="position_title">
+                                    Должность
+                                </th>
+                                <th class="sortable-header" data-sort="manager_name">
+                                    Руководитель
+                                </th>
+                                <th class="sortable-header" data-sort="salary">
+                                    Зарплата
+                                </th>
+                                <th class="sortable-header" data-sort="hire_date">
+                                    Дата найма
+                                </th>
+                                <th class="sortable-header" data-sort="years_of_service">
+                                    Стаж
+                                </th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in employees %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('main.employee_detail', id=employee.id) }}"
+                                        class="text-decoration-none fw-bold">
+                                        {{ employee.full_name }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        {{ employee.position.title }}
+                                    </span>
+                                    <small class="text-muted">(Уровень {{ employee.position.level }})</small>
+                                </td>
+                                <td class="manager-cell" data-employee-id="{{ employee.id }}">
+                                    <div class="manager-display">
+                                        {% if employee.manager %}
+                                        <a href="{{ url_for('main.employee_detail', id=employee.manager.id) }}"
+                                            class="text-decoration-none manager-link">
+                                            {{ employee.manager.full_name }}
+                                        </a>
+                                        {% else %}
+                                        <span class="text-muted">—</span>
+                                        {% endif %}
+                                        <button class="btn btn-sm btn-outline-secondary ms-2 change-manager-btn"
+                                            title="Изменить начальника" data-employee-id="{{ employee.id }}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                    <div class="manager-edit" style="display: none;">
+                                        <select class="form-select form-select-sm manager-select"
+                                            data-employee-id="{{ employee.id }}">
+                                            <option value="">Загрузка...</option>
+                                        </select>
+                                        <div class="mt-1">
+                                            <button class="btn btn-sm btn-success save-manager-btn"
+                                                data-employee-id="{{ employee.id }}">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-secondary cancel-manager-btn"
+                                                data-employee-id="{{ employee.id }}">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ "{:,.0f}".format(employee.salary) }} ₽</td>
+                                <td>{{ employee.hire_date.strftime('%d.%m.%Y') if employee.hire_date else '—' }}</td>
+                                <td>{{ employee.years_of_service }} лет</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('main.employee_detail', id=employee.id) }}"
+                                            class="btn btn-outline-info" title="Просмотр">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('main.edit_employee', id=employee.id) }}"
+                                            class="btn btn-outline-warning" title="Редактировать">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Пагинация -->
+                {% if pagination.pages > 1 %}
+                <nav aria-label="Навигация по страницам">
+                    <ul class="pagination justify-content-center">
+                        {% if pagination.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.employees', page=pagination.prev_num, 
+                                                                          search=current_search, 
+                                                                          position_id=current_position,
+                                                                          sort_by=current_sort_by,
+                                                                          sort_order=current_sort_order) }}">
+                                Предыдущая
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for page_num in pagination.iter_pages() %}
+                        {% if page_num %}
+                        {% if page_num != pagination.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.employees', page=page_num, 
+                                                                                  search=current_search, 
+                                                                                  position_id=current_position,
+                                                                                  sort_by=current_sort_by,
+                                                                                  sort_order=current_sort_order) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if pagination.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.employees', page=pagination.next_num, 
+                                                                          search=current_search, 
+                                                                          position_id=current_position,
+                                                                          sort_by=current_sort_by,
+                                                                          sort_order=current_sort_order) }}">
+                                Следующая
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">Сотрудники не найдены</h4>
+                    <p class="text-muted">Попробуйте изменить параметры поиска или добавьте нового сотрудника</p>
+                    <a href="{{ url_for('main.add_employee') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Добавить сотрудника
+                    </a>
+                </div>
+
+                <style>
+
+                </style>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/employee.css') }}">
+
+<script src="{{ url_for('static', filename='script/employee.js') }}"></script>
+{% endblock %}

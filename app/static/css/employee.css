@@ -1,0 +1,65 @@
+.sortable-header {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s;
+    position: relative;
+}
+
+.sortable-header:hover {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.sortable-header i {
+    margin-left: 5px;
+    font-size: 0.8em;
+}
+
+/* Стили для изменения начальника */
+.manager-cell {
+    min-width: 200px;
+}
+
+.manager-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.manager-edit {
+    min-width: 180px;
+}
+
+.change-manager-btn {
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.manager-cell:hover .change-manager-btn {
+    opacity: 1;
+}
+
+.manager-select {
+    margin-bottom: 5px;
+}
+
+.btn-group-manager {
+    display: flex;
+    gap: 5px;
+}
+
+/* Анимация для уведомлений */
+.alert {
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+
+{% block title %}{{ employee.full_name }} - Система управления сотрудниками{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-user"></i> {{ employee.full_name }}
+                    </h3>
+                    <div class="btn-group">
+                        <a href="{{ url_for('main.edit_employee', id=employee.id) }}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Редактировать
+                        </a>
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#deleteModal">
+                            <i class="fas fa-trash"></i> Удалить
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-briefcase text-primary"></i> Должность</h5>
+                            <p class="mb-3">
+                                <strong>{{ employee.position.title }}</strong>
+                                <span class="badge bg-info ms-2">Уровень {{ employee.position.level }}</span>
+                            </p>
+
+                            <h5><i class="fas fa-dollar-sign text-success"></i> Зарплата</h5>
+                            <p class="mb-3">
+                                <strong>{{ "{:,.2f}".format(employee.salary) }} ₽</strong>
+                            </p>
+
+                            <h5><i class="fas fa-calendar text-info"></i> Дата приема</h5>
+                            <p class="mb-3">
+                                {% if employee.hire_date %}
+                                {{ employee.hire_date.strftime('%d.%m.%Y') }}
+                                <small class="text-muted">
+                                    ({{ employee.years_of_service }} лет назад)
+                                </small>
+                                {% else %}
+                                <em class="text-muted">Не указана</em>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-user-tie text-warning"></i> Руководитель</h5>
+                            <p class="mb-3">
+                                {% if employee.manager %}
+                                <a href="{{ url_for('main.employee_detail', id=employee.manager.id) }}"
+                                    class="text-decoration-none">
+                                    <strong>{{ employee.manager.full_name }}</strong>
+                                </a>
+                                <br>
+                                <small class="text-muted">{{ employee.manager.position.title }}</small>
+                                {% else %}
+                                <em class="text-muted">Нет руководителя</em>
+                                {% endif %}
+                            </p>
+
+                            <h5><i class="fas fa-users text-secondary"></i> Подчиненные</h5>
+                            {% if employee.subordinates %}
+                            <ul class="list-unstyled">
+                                {% for subordinate in employee.subordinates %}
+                                <li class="mb-2">
+                                    <a href="{{ url_for('main.employee_detail', id=subordinate.id) }}"
+                                        class="text-decoration-none">
+                                        <i class="fas fa-user-circle"></i> {{ subordinate.full_name }}
+                                    </a>
+                                    <br>
+                                    <small class="text-muted ms-3">{{ subordinate.position.title }}</small>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="text-muted"><em>Нет подчиненных</em></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('main.employees') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Назад к списку
+                        </a>
+                        <small class="text-muted align-self-center">
+                            ID: {{ employee.id }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Статистика сотрудника -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar"></i> Статистика
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Количество подчиненных:</strong>
+                        <span class="badge bg-primary">{{ employee.subordinates|length }}</span>
+                    </div>
+
+                    {% if employee.manager %}
+                    <div class="mb-3">
+                        <strong>Уровень в иерархии:</strong>
+                        <span class="badge bg-info">{{ employee.position.level }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if employee.hire_date %}
+                    <div class="mb-3">
+                        <strong>Стаж работы:</strong>
+                        {{ employee.years_of_service }} лет
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Быстрые действия -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt"></i> Быстрые действия
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('main.edit_employee', id=employee.id) }}"
+                            class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-edit"></i> Редактировать данные
+                        </a>
+
+                        {% if employee.manager %}
+                        <a href="{{ url_for('main.employee_detail', id=employee.manager.id) }}"
+                            class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-arrow-up"></i> Перейти к руководителю
+                        </a>
+                        {% endif %}
+
+                        {% if employee.subordinates %}
+                        <a href="{{ url_for('main.hierarchy') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-sitemap"></i> Показать в иерархии
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-danger"></i>
+                    Подтверждение удаления
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы действительно хотите удалить сотрудника <strong>{{ employee.full_name }}</strong>?</p>
+                {% if employee.subordinates %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Внимание!</strong> У этого сотрудника есть подчиненные.
+                    Удаление невозможно.
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Это действие нельзя отменить.
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Отмена
+                </button>
+                {% if not employee.subordinates %}
+                <form method="POST" action="{{ url_for('main.delete_employee', id=employee.id) }}"
+                    style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Удалить
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

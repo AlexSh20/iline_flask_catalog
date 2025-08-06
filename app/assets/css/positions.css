@@ -1,0 +1,16 @@
+    .position-employees {
+        max-height: 120px;
+        overflow-y: auto;
+    }
+
+    .card-sm {
+        font-size: 0.875rem;
+    }
+
+    .hierarchy-chart .hierarchy-level:last-child {
+        margin-bottom: 0 !important;
+    }
+
+    .hierarchy-chart .border-bottom {
+        border-color: #dee2e6 !important;
+    }

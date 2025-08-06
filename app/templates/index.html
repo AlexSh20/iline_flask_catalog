@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-tachometer-alt"></i> Панель управления
+        </h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ total_employees }}</h4>
+                        <p class="mb-0">Всего сотрудников</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ total_positions }}</h4>
+                        <p class="mb-0">Должностей</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-briefcase fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ managers_count }}</h4>
+                        <p class="mb-0">Руководителей</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user-tie fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ recent_employees|length }}</h4>
+                        <p class="mb-0">Новых за месяц</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user-plus fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock"></i> Последние добавленные сотрудники
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_employees %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ФИО</th>
+                                <th>Должность</th>
+                                <th>Зарплата</th>
+                                <th>Дата найма</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in recent_employees %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('main.employee_detail', id=employee.id) }}"
+                                        class="text-decoration-none">
+                                        {{ employee.full_name }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        {{ employee.position.title }}
+                                    </span>
+                                </td>
+                                <td>{{ "{:,.0f}".format(employee.salary) }} ₽</td>
+                                <td>{{ employee.hire_date.strftime('%d.%m.%Y') if employee.hire_date else '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Нет данных о сотрудниках</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tools"></i> Быстрые действия
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('main.add_employee') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Добавить сотрудника
+                    </a>
+                    <a href="{{ url_for('main.employees') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-list"></i> Все сотрудники
+                    </a>
+                    <a href="{{ url_for('main.hierarchy') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-sitemap"></i> Организационная структура
+                    </a>
+                    <a href="{{ url_for('main.positions') }}" class="btn btn-outline-info">
+                        <i class="fas fa-briefcase"></i> Управление должностями
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+
+{% block title %}Организационная структура - Система управления сотрудниками{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-sitemap"></i> Организационная структура</h2>
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="expandAll">
+                <i class="fas fa-expand-arrows-alt"></i> Развернуть все
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="collapseAll">
+                <i class="fas fa-compress-arrows-alt"></i> Свернуть все
+            </button>
+        </div>
+    </div>
+
+    {% if top_employees %}
+    <div class="hierarchy-container">
+        {% for top_employee in top_employees %}
+        <div class="hierarchy-tree mb-4">
+            <!-- Рендеринг топ-менеджера -->
+            <div class="employee-node" data-depth="0">
+                <div class="employee-card card mb-2">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="employee-info flex-grow-1">
+                                <div class="d-flex align-items-center mb-1">
+                                    {% if top_employee.subordinates %}
+                                    <button class="btn btn-sm btn-outline-secondary me-2 toggle-btn"
+                                        data-bs-toggle="collapse" data-bs-target="#subordinates-{{ top_employee.id }}">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    {% else %}
+                                    <div class="me-2" style="width: 32px;"></div>
+                                    {% endif %}
+
+                                    <div>
+                                        <h6 class="mb-0">
+                                            <a href="{{ url_for('main.employee_detail', id=top_employee.id) }}"
+                                                class="text-decoration-none">
+                                                {{ top_employee.full_name }}
+                                            </a>
+                                        </h6>
+                                        <small class="text-muted">{{ top_employee.position.title }}</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="employee-stats text-end">
+                                <div class="small">
+                                    <span class="badge bg-info">Уровень {{ top_employee.position.level }}</span>
+                                </div>
+                                <div class="small text-muted mt-1">
+                                    {{ "{:,.0f}".format(top_employee.salary) }} ₽
+                                </div>
+                                {% if top_employee.subordinates %}
+                                <div class="small text-muted">
+                                    <i class="fas fa-users"></i> {{ top_employee.subordinates|length }} подчиненных
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Подчиненные первого уровня -->
+                {% if top_employee.subordinates %}
+                <div class="collapse show subordinates-container" id="subordinates-{{ top_employee.id }}">
+                    {% for subordinate in top_employee.subordinates|sort(attribute='position.level') %}
+                    <div class="employee-node" data-depth="1" style="margin-left: 30px;">
+                        <div class="employee-card card mb-2">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="employee-info flex-grow-1">
+                                        <div class="d-flex align-items-center mb-1">
+                                            {% if subordinate.subordinates %}
+                                            <button class="btn btn-sm btn-outline-secondary me-2 toggle-btn"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#subordinates-{{ subordinate.id }}">
+                                                <i class="fas fa-chevron-down"></i>
+                                            </button>
+                                            {% else %}
+                                            <div class="me-2" style="width: 32px;"></div>
+                                            {% endif %}
+
+                                            <div>
+                                                <h6 class="mb-0">
+                                                    <a href="{{ url_for('main.employee_detail', id=subordinate.id) }}"
+                                                        class="text-decoration-none">
+                                                        {{ subordinate.full_name }}
+                                                    </a>
+                                                </h6>
+                                                <small class="text-muted">{{ subordinate.position.title }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="employee-stats text-end">
+                                        <div class="small">
+                                            <span class="badge bg-info">Уровень {{ subordinate.position.level }}</span>
+                                        </div>
+                                        <div class="small text-muted mt-1">
+                                            {{ "{:,.0f}".format(subordinate.salary) }} ₽
+                                        </div>
+                                        {% if subordinate.subordinates %}
+                                        <div class="small text-muted">
+                                            <i class="fas fa-users"></i> {{ subordinate.subordinates|length }}
+                                            подчиненных
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Подчиненные второго уровня -->
+                        {% if subordinate.subordinates %}
+                        <div class="collapse show subordinates-container" id="subordinates-{{ subordinate.id }}">
+                            {% for sub2 in subordinate.subordinates|sort(attribute='position.level') %}
+                            <div class="employee-node" data-depth="2" style="margin-left: 60px;">
+                                <div class="employee-card card mb-2">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="employee-info flex-grow-1">
+                                                <div class="d-flex align-items-center mb-1">
+                                                    {% if sub2.subordinates %}
+                                                    <button class="btn btn-sm btn-outline-secondary me-2 toggle-btn"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#subordinates-{{ sub2.id }}">
+                                                        <i class="fas fa-chevron-down"></i>
+                                                    </button>
+                                                    {% else %}
+                                                    <div class="me-2" style="width: 32px;"></div>
+                                                    {% endif %}
+
+                                                    <div>
+                                                        <h6 class="mb-0">
+                                                            <a href="{{ url_for('main.employee_detail', id=sub2.id) }}"
+                                                                class="text-decoration-none">
+                                                                {{ sub2.full_name }}
+                                                            </a>
+                                                        </h6>
+                                                        <small class="text-muted">{{ sub2.position.title }}</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="employee-stats text-end">
+                                                <div class="small">
+                                                    <span class="badge bg-info">Уровень {{ sub2.position.level }}</span>
+                                                </div>
+                                                <div class="small text-muted mt-1">
+                                                    {{ "{:,.0f}".format(sub2.salary) }} ₽
+                                                </div>
+                                                {% if sub2.subordinates %}
+                                                <div class="small text-muted">
+                                                    <i class="fas fa-users"></i> {{ sub2.subordinates|length }}
+                                                    подчиненных
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Подчиненные третьего уровня -->
+                                {% if sub2.subordinates %}
+                                <div class="collapse show subordinates-container" id="subordinates-{{ sub2.id }}">
+                                    {% for sub3 in sub2.subordinates %}
+                                    <div class="employee-node" data-depth="3" style="margin-left: 90px;">
+                                        <div class="employee-card card mb-2">
+                                            <div class="card-body p-3">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div class="employee-info flex-grow-1">
+                                                        <div class="d-flex align-items-center mb-1">
+                                                            <div class="me-2" style="width: 32px;"></div>
+                                                            <div>
+                                                                <h6 class="mb-0">
+                                                                    <a href="{{ url_for('main.employee_detail', id=sub3.id) }}"
+                                                                        class="text-decoration-none">
+                                                                        {{ sub3.full_name }}
+                                                                    </a>
+                                                                </h6>
+                                                                <small class="text-muted">{{ sub3.position.title
+                                                                    }}</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="employee-stats text-end">
+                                                        <div class="small">
+                                                            <span class="badge bg-info">Уровень {{ sub3.position.level
+                                                                }}</span>
+                                                        </div>
+                                                        <div class="small text-muted mt-1">
+                                                            {{ "{:,.0f}".format(sub3.salary) }} ₽
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle fa-2x mb-3"></i>
+        <h4>Нет данных для отображения</h4>
+        <p>В системе пока нет сотрудников верхнего уровня (без руководителей).</p>
+        <a href="{{ url_for('main.add_employee') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Добавить первого сотрудника
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Статистика иерархии -->
+    {% if top_employees %}
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie"></i> Статистика иерархии
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="border rounded p-3">
+                                <div class="h4 text-primary">{{ top_employees|length }}</div>
+                                <div class="small text-muted">Топ-менеджеров</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border rounded p-3">
+                                {% set total_count = namespace(value=0) %}
+                                {% for emp in top_employees %}
+                                {% set total_count.value = total_count.value + 1 %}
+                                {% for sub in emp.subordinates %}
+                                {% set total_count.value = total_count.value + 1 %}
+                                {% for sub2 in sub.subordinates %}
+                                {% set total_count.value = total_count.value + 1 %}
+                                {% for sub3 in sub2.subordinates %}
+                                {% set total_count.value = total_count.value + 1 %}
+                                {% endfor %}
+                                {% endfor %}
+                                {% endfor %}
+                                {% endfor %}
+                                <div class="h4 text-success">{{ total_count.value }}</div>
+                                <div class="small text-muted">Всего в иерархии</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border rounded p-3">
+                                <div class="h4 text-info">5</div>
+                                <div class="small text-muted">Максимум уровней</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users"></i> Быстрые действия
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('main.add_employee') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Добавить сотрудника
+                        </a>
+                        <a href="{{ url_for('main.employees') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-list"></i> Список всех сотрудников
+                        </a>
+                        <a href="{{ url_for('main.positions') }}" class="btn btn-outline-info">
+                            <i class="fas fa-briefcase"></i> Управление должностями
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/hierarchy.css') }}">
+
+<script src="{{ url_for('static', filename='script/hierarchy.js') }}"></script>
+{% endblock %}

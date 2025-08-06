@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+
+{% block title %}Редактировать {{ employee.full_name }} - Система управления сотрудниками{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-user-edit"></i> Редактировать сотрудника
+                    </h3>
+                    <small class="text-muted">ID: {{ employee.id }}</small>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="full_name" class="form-label">
+                                        <i class="fas fa-user"></i> Полное имя *
+                                    </label>
+                                    <input type="text" class="form-control" id="full_name" name="full_name" required
+                                        value="{{ employee.full_name }}" placeholder="Иванов Иван Иванович">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="position_id" class="form-label">
+                                        <i class="fas fa-briefcase"></i> Должность *
+                                    </label>
+                                    <select class="form-select" id="position_id" name="position_id" required>
+                                        <option value="">Выберите должность</option>
+                                        {% for position in positions %}
+                                        <option value="{{ position.id }}" {% if position.id==employee.position_id
+                                            %}selected{% endif %}>
+                                            {{ position.title }} (Уровень {{ position.level }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="salary" class="form-label">
+                                        <i class="fas fa-dollar-sign"></i> Зарплата *
+                                    </label>
+                                    <input type="number" class="form-control" id="salary" name="salary" required min="0"
+                                        step="0.01" value="{{ employee.salary }}" placeholder="50000">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="hire_date" class="form-label">
+                                        <i class="fas fa-calendar"></i> Дата приема на работу
+                                    </label>
+                                    <input type="date" class="form-control" id="hire_date" name="hire_date"
+                                        value="{% if employee.hire_date %}{{ employee.hire_date.strftime('%Y-%m-%d') }}{% endif %}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="manager_id" class="form-label">
+                                <i class="fas fa-user-tie"></i> Руководитель
+                            </label>
+                            <select class="form-select" id="manager_id" name="manager_id">
+                                <option value="">Без руководителя</option>
+                                {% for manager in potential_managers %}
+                                <option value="{{ manager.id }}" {% if manager.id==employee.manager_id %}selected{%
+                                    endif %}>
+                                    {{ manager.full_name }} - {{ manager.position.title }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">
+                                Руководитель должен иметь уровень должности выше, чем у подчиненного
+                            </div>
+                        </div>
+
+                        <!-- Информация о подчиненных -->
+                        {% if employee.subordinates %}
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> Подчиненные сотрудники:</h6>
+                            <ul class="mb-0">
+                                {% for subordinate in employee.subordinates %}
+                                <li>{{ subordinate.full_name }} - {{ subordinate.position.title }}</li>
+                                {% endfor %}
+                            </ul>
+                            <small class="text-muted">
+                                При изменении должности учитывайте иерархию подчиненных
+                            </small>
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <a href="{{ url_for('main.employee_detail', id=employee.id) }}"
+                                    class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Назад
+                                </a>
+                                <a href="{{ url_for('main.employees') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-list"></i> К списку
+                                </a>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Сохранить изменения
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="{{ url_for('static', filename='script/edit_employee.js') }}"></script>
+
+{% endblock %}
