@@ -1,0 +1,8 @@
+psycopg2-binary
+mimesis
+prettytable
+python-dotenv
+click
+flask
+flask-sqlalchemy
+flask-migrate
