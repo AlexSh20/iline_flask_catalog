@@ -175,11 +175,54 @@
                             <i class="fas fa-sitemap"></i> Показать иерархию сотрудников
                         </a>
                     </div>
-                </div>
+                </div> 
             </div>
         </div>
     </div>
 </div>
+
+<!-- Пагинация -->
+                {% if pagination.pages > 1 %}
+                <nav aria-label="Навигация по страницам">
+                    <ul class="pagination justify-content-center">
+                        {% if pagination.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.positions', page=pagination.prev_num) }}">
+                                Предыдущая
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for page_num in pagination.iter_pages() %}
+                        {% if page_num %}
+                        {% if page_num != pagination.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.positions', page=page_num) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if pagination.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.positions', page=pagination.next_num) }}">
+                                Следующая
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/positions.css') }}">
 {% endblock %}

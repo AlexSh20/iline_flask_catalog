@@ -86,8 +86,15 @@ def employee_detail(id):
 @bp.route("/positions")
 def positions():
     """Страница со списком должностей"""
-    positions = Position.get_all_positions()
-    return render_template("positions.html", positions=positions)
+    page = request.args.get("page", 1, type=int)
+    per_page = 10
+    query = Position.query.order_by(Position.level)
+    employees_pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    return render_template(
+        "positions.html",
+        positions=employees_pagination.items,
+        pagination=employees_pagination,
+    )
 
 
 @bp.route("/hierarchy")
@@ -326,3 +333,13 @@ def get_potential_managers(employee_id):
                 "message": f"Ошибка при получении списка начальников: {str(e)}",
             }
         )
+
+
+@bp.route("/api/search_employees")
+def search_employees_autocomplete():
+    query = request.args.get("q", "")
+    if len(query) < 2:
+        return jsonify([])
+
+    employees = Employee.search_by_name(query)
+    return jsonify([{"id": e.id, "name": e.full_name} for e in employees[:10]])

@@ -1,8 +1,6 @@
-psycopg2-binary
-mimesis
-prettytable
-python-dotenv
-click
-flask
-flask-sqlalchemy
-flask-migrate
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+psycopg2-binary==2.9.7
+python-dotenv==1.0.0
+Werkzeug==2.3.7
+Flask-WTF ==1.2.2

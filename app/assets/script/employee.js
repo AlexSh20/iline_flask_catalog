@@ -52,6 +52,37 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+
+// Автодополнение для поиска сотрудников
+const searchInput = document.getElementById('search');
+if (searchInput) {
+    searchInput.addEventListener('input', function () {
+        const query = this.value;
+        if (query.length < 2) {
+            document.getElementById('suggestions').innerHTML = '';
+            return;
+        }
+
+        fetch(`/api/search_employees?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                const suggestions = document.getElementById('suggestions');
+                suggestions.innerHTML = '';
+                data.forEach(emp => {
+                    const div = document.createElement('div');
+                    div.className = 'list-group-item list-group-item-action';
+                    div.textContent = emp.name;
+                    div.style.cursor = 'pointer';
+                    div.onclick = () => {
+                        document.getElementById('search').value = emp.name;
+                        suggestions.innerHTML = '';
+                    };
+                    suggestions.appendChild(div);
+                });
+            });
+    });
+}
+
 // Функционал изменения начальника
 initManagerChangeFeature();
 

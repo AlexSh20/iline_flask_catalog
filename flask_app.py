@@ -28,7 +28,7 @@ def make_shell_context():
 def init_db():
     """Инициализация базы данных"""
     db.create_all()
-    print("База данных инициализирована!")
+    app.logger.info("База данных инициализирована!")
 
 
 @app.cli.command()
@@ -37,11 +37,11 @@ def seed_db():
     from datetime import date, timedelta
     import random
 
-    print("Начинаем создание тестовых данных...")
+    app.logger.info("Начинаем создание тестовых данных...")
 
     # Создаем должности, если их нет
     positions_count = Position.query.count()
-    print(f"Найдено должностей: {positions_count}")
+    app.logger.info(f"Найдено должностей: {positions_count}")
 
     if positions_count == 0:
         positions_data = [
@@ -57,11 +57,11 @@ def seed_db():
             db.session.add(position)
 
         db.session.commit()
-        print("Должности созданы!")
+        app.logger.info("Должности созданы!")
 
     # Создаем тестовых сотрудников, если их нет
     employees_count = Employee.query.count()
-    print(f"Найдено сотрудников: {employees_count}")
+    app.logger.info(f"Найдено сотрудников: {employees_count}")
 
     if employees_count == 0:
         names = [
@@ -77,9 +77,9 @@ def seed_db():
         manager_position = Position.query.filter_by(level=2).first()
         developer_position = Position.query.filter_by(level=5).first()
 
-        print(f"CEO позиция: {ceo_position}")
-        print(f"Manager позиция: {manager_position}")
-        print(f"Developer позиция: {developer_position}")
+        app.logger.info(f"CEO позиция: {ceo_position}")
+        app.logger.info(f"Manager позиция: {manager_position}")
+        app.logger.info(f"Developer позиция: {developer_position}")
 
         # Создаем CEO
         ceo = Employee(
@@ -90,7 +90,7 @@ def seed_db():
         )
         db.session.add(ceo)
         db.session.commit()
-        print(f"CEO создан: {ceo.full_name}")
+        app.logger.info(f"CEO создан: {ceo.full_name}")
 
         # Создаем менеджера
         manager = Employee(
@@ -102,7 +102,7 @@ def seed_db():
         )
         db.session.add(manager)
         db.session.commit()
-        print(f"Менеджер создан: {manager.full_name}")
+        app.logger.info(f"Менеджер создан: {manager.full_name}")
 
         # Создаем разработчиков
         for name in names[2:]:
@@ -116,9 +116,9 @@ def seed_db():
             db.session.add(employee)
 
         db.session.commit()
-        print("Тестовые сотрудники созданы!")
+        app.logger.info("Тестовые сотрудники созданы!")
 
-    print("Создание тестовых данных завершено!")
+    app.logger.info("Создание тестовых данных завершено!")
 
 
 if __name__ == "__main__":
